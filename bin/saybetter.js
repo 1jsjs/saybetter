@@ -12,6 +12,7 @@ import { coach, bySeverity } from '../src/coach.js';
 import { drillTimes, localDate, startOfToday } from '../src/schedule.js';
 import * as store from '../src/store.js';
 import { labelFor } from '../src/patterns.js';
+import { watchPasses, withWatchProgress } from '../src/progress.js';
 import { appendRawEvent, log, warn } from '../src/log.js';
 import { runCommand } from '../src/proc.js';
 
@@ -103,7 +104,8 @@ function factText(pattern, history, wins) {
   let t = `English coach: when speaking English I often slip on ${labelFor(pattern).label.toLowerCase()} — e.g. I said "${ex.original.replace(/[.!?]+$/, '')}" instead of "${ex.corrected.replace(/[.!?]+$/, '')}".`;
   t += ` Slipped ${slips.length}×`;
   if (good.length) t += `, got it right in real conversation ${good.length}× (latest: "${good[good.length - 1].text.replace(/[.!?]+$/, '')}")`;
-  return `${t} as of ${localDate()}.`;
+  // keep what the watch app recorded (see src/progress.js) when the nightly review rewrites the fact
+  return withWatchProgress(t, watchPasses(store.loadDrills(), store.loadDrillsDone()).get(pattern), localDate());
 }
 
 async function rememberPatterns(state) {

@@ -24,6 +24,7 @@ export function parseLooseJson(text) {
 export const todosCreate = (text, alarmAt) =>
   beeJson(['todos', 'create', '--text', text, ...(alarmAt ? ['--alarm-at', alarmAt] : [])]);
 export const todosList = () => beeJson(['todos', 'list']);
+export const todosComplete = (id) => beeJson(['todos', 'complete', String(id)]);
 export const factsCreate = (text) => beeJson(['facts', 'create', '--text', text]);
 export const factsList = () => beeJson(['facts', 'list']);
 export const factsUpdate = (id, text) => beeJson(['facts', 'update', String(id), '--text', text]);

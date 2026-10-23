@@ -50,7 +50,7 @@ mistakes to **Bee's memory**, and then notices when you **get them right in a re
 ```
 
 Every arrow that touches Bee is a real call at runtime: `bee stream`, `bee conversations list/transcript`,
-`bee todos create`, `bee facts create`, `bee facts update` — plus an **Agent Skill** (`skills/saybetter-coach`) that lets
+`bee todos create/list/complete`, `bee facts create/update` — plus an **Agent Skill** (`skills/saybetter-coach`) that lets
 Claude Code / Codex quiz you using the Bee MCP server.
 
 ## Pronunciation
@@ -67,11 +67,20 @@ Needs a whisper.cpp model, e.g. `ggml-large-v3-turbo-q5_0.bin` in `~/.cache/whis
 
 ## Watch drill app (`watch/`)
 
-**SayBetter Drill** (SwiftUI, watchOS 10+) closes the loop on the wrist: it loads tomorrow's drills from Bee via
-`GET /api/drills`, you say the sentence into the watch, it transcribes **on the watch with WhisperKit**
-(`openai_whisper-tiny.en`) and aligns it with the target; on a pass it calls `POST /api/drills/complete`, which runs
-`bee todos complete <id>` — the drill is marked done **in Bee**. If on-device transcription is not possible it falls
-back to the Mac's whisper.cpp. Status: runs end to end in the watchOS simulator; signing for a physical Apple Watch SE 3
+**SayBetter Drill** (SwiftUI, watchOS 10+) closes the loop on the wrist, and **Bee holds both halves of it — what to
+practise and whether you did**:
+
+1. **What to practise comes from Bee.** `GET /api/drills` reads your Bee todos live (`bee todos list`) and keeps the
+   "Say it: …" ones SayBetter scheduled. Delete or complete one in the Bee app and it disappears from the watch.
+2. When the Bee alarm buzzes, open the app and say the sentence; it transcribes **on the watch with WhisperKit**
+   (`openai_whisper-tiny.en`) and aligns it with the target.
+3. **Whether you did it goes back to Bee.** On a pass, `POST /api/drills/complete` runs `bee todos complete <id>` and
+   updates the mistake pattern's **Bee fact** — *"…practised out loud on my Apple Watch 2× (latest pronunciation score
+   88)"* (or creates one), so your personal AI knows you are working on it. The nightly review keeps that clause when it
+   rewrites the fact.
+
+If Bee is unreachable the drill list falls back to the local copy; if on-device transcription is not possible it falls
+back to the Mac's whisper.cpp. Status: runs end to end in the watchOS simulator, and the Bee side (live todo list, todo completion, fact update) was checked against a real Bee account; signing for a physical Apple Watch SE 3
 succeeded, installation is pending (device tunnel). Build with `xcodegen` + Xcode; see `watch/README.md`.
 Run the server with `SAYBETTER_HOST=0.0.0.0 saybetter serve` so the watch can reach it on the LAN.
 

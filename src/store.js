@@ -84,6 +84,7 @@ export const loadDrills = () => readJson(file('drills.json'), []);
 export const saveDrills = (d) => writeJson(file('drills.json'), d);
 export const loadFacts = () => readJson(file('facts.json'), []);
 export const saveFacts = (f) => writeJson(file('facts.json'), f);
+export const loadDrillsDone = () => readJson(file('drills_done.json'), {});
 
 // ---- daily report: JSON for the UI, Markdown for humans ----
 export function writeReport(date, { items, praise_ko, takeaway_ko, takeaway_pattern, used_correctly = [] }) {

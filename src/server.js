@@ -8,9 +8,10 @@ import fs from 'node:fs';
 import path from 'node:path';
 import os from 'node:os';
 import { fileURLToPath } from 'node:url';
-import { spawn } from 'node:child_process';
 import { labelFor } from './patterns.js';
 import { assess } from './pronounce.js';
+import * as beeCli from './bee.js';
+import { drillsFromBeeTodos, watchPasses, withWatchProgress, watchFactText } from './progress.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 export const UI_DIR = path.resolve(__dirname, '..', 'ui');
@@ -414,7 +415,7 @@ export function selectDrills(drills, done = {}, now = new Date()) {
         original: str(d.original),
         pattern: str(d.pattern),
         alarm_at: alarm,
-        done: !!rec,
+        done: !!rec || !!d.completed,
         score: rec ? rec.score ?? null : null,
         _soon: day === today || day === tomorrow,
       };
@@ -433,23 +434,44 @@ export function parseDrillComplete(body) {
   return { todo_id: Number(id), score: Number.isFinite(score) ? Math.max(0, Math.min(100, Math.round(score))) : null, heard: str(body.heard), words };
 }
 
-function beeCompleteTodo(id, timeoutMs = 20000) {
-  return new Promise((resolve) => {
-    let out = '', err = '';
-    let child;
-    try { child = spawn('bee', ['todos', 'complete', String(id), '--json'], { stdio: ['ignore', 'pipe', 'pipe'] }); }
-    catch (e) { return resolve({ ok: false, error: String(e.message || e) }); }
-    const timer = setTimeout(() => { child.kill('SIGKILL'); resolve({ ok: false, error: 'bee timed out' }); }, timeoutMs);
-    child.stdout.on('data', (c) => { out += c; });
-    child.stderr.on('data', (c) => { err += c; });
-    child.on('error', (e) => { clearTimeout(timer); resolve({ ok: false, error: String(e.message || e) }); });
-    child.on('close', (code) => {
-      clearTimeout(timer);
-      let json = null;
-      try { json = JSON.parse(out); } catch {}
-      resolve(code === 0 ? { ok: true, result: json ?? out.trim() } : { ok: false, error: (err || out).trim() || `exit ${code}` });
-    });
-  });
+// Bee calls the server makes for the watch app; injectable so tests never touch the real account.
+const defaultBee = {
+  todosList: () => beeCli.todosList(),
+  todosComplete: (id) => beeCli.todosComplete(id),
+  factsUpdate: (id, text) => beeCli.factsUpdate(id, text),
+  factsCreate: (text) => beeCli.factsCreate(text),
+};
+
+// After a watch pass, write the progress into the pattern's Bee fact (create one if there is none yet).
+async function recordWatchProgress(home, bee, drill, now) {
+  if (!drill || !drill.pattern) return null;
+  const drills = asArray(readJson(path.join(home, 'drills.json'), []));
+  if (!drills.some((d) => d && Number(d.todo_id) === Number(drill.todo_id))) drills.push(drill);
+  const progress = watchPasses(drills, loadDrillsDone(home)).get(drill.pattern);
+  if (!progress) return null;
+  const date = localDate(now);
+  const facts = asArray(readJson(path.join(home, 'facts.json'), []));
+  let fact = facts.find((f) => f && f.pattern === drill.pattern && f.fact_id);
+  const prevText = fact ? fact.text : null;
+  if (fact) {
+    const text = withWatchProgress(fact.text, progress, date);
+    try {
+      await bee.factsUpdate(fact.fact_id, text);
+      Object.assign(fact, { text, updated_at: now.toISOString() });
+    } catch (err) {
+      if (!/not found/i.test(String(err.message))) throw err;
+      facts.splice(facts.indexOf(fact), 1); // deleted in the Bee app: recreate it below
+      fact = null;
+    }
+  }
+  if (!fact) {
+    const text = prevText ? withWatchProgress(prevText, progress, date) : watchFactText(drill.pattern, drill.natural, progress, date);
+    const res = await bee.factsCreate(text);
+    fact = { fact_id: res?.id ?? res?.fact?.id ?? null, pattern: drill.pattern, count: 0, text, created_at: now.toISOString() };
+    facts.push(fact);
+  }
+  fs.writeFileSync(path.join(home, 'facts.json'), JSON.stringify(facts, null, 1));
+  return { fact_id: fact.fact_id, text: fact.text, watch_passes: progress.count };
 }
 
 function sendJson(res, status, data) {
@@ -484,7 +506,15 @@ function readBody(req, limit = 64 * 1024) {
   });
 }
 
-export function createHandler(home) {
+export function createHandler(home, { bee = defaultBee, cacheMs = 15000 } = {}) {
+  let todosCache = null; // { at, drills } — the watch polls, Bee is the source of truth
+  const beeDrills = async () => {
+    if (todosCache && Date.now() - todosCache.at < cacheMs) return todosCache.drills;
+    const res = await bee.todosList();
+    const drills = drillsFromBeeTodos(res?.todos, asArray(readJson(path.join(home, 'drills.json'), [])), { done: loadDrillsDone(home) });
+    todosCache = { at: Date.now(), drills };
+    return drills;
+  };
   return async (req, res) => {
     try {
       const url = new URL(req.url, 'http://localhost');
@@ -523,25 +553,42 @@ export function createHandler(home) {
         }
       }
       if (p === '/api/drills' && req.method === 'GET') {
-        return sendJson(res, 200, { items: selectDrills(readJson(path.join(home, 'drills.json'), []), loadDrillsDone(home)) });
+        // Today's drills come from Bee itself ("Say it: …" todos); drills.json is only the offline fallback.
+        const done = loadDrillsDone(home);
+        try {
+          return sendJson(res, 200, { source: 'bee', items: selectDrills(await beeDrills(), done) });
+        } catch (err) {
+          return sendJson(res, 200, { source: 'local', warning: String(err.message || err), items: selectDrills(readJson(path.join(home, 'drills.json'), []), done) });
+        }
       }
       if (p === '/api/drills/complete' && req.method === 'POST') {
         let body;
         try { body = JSON.parse((await readBody(req)) || '{}'); } catch { return sendJson(res, 400, { error: 'invalid JSON' }); }
         const c = parseDrillComplete(body);
         if (c.error) return sendJson(res, 400, { error: c.error });
-        const bee = await beeCompleteTodo(c.todo_id);
-        const drill = asArray(readJson(path.join(home, 'drills.json'), [])).find((d) => d && Number(d.todo_id) === c.todo_id) || {};
+        let done = null;
+        try { done = { ok: true, result: await bee.todosComplete(c.todo_id) }; }
+        catch (err) { done = { ok: false, error: String(err.message || err) }; }
+        todosCache = null;
+        const local = asArray(readJson(path.join(home, 'drills.json'), [])).find((d) => d && Number(d.todo_id) === c.todo_id);
+        let fromBee = null;
+        if (!local) { try { fromBee = (await beeDrills()).find((d) => d.todo_id === c.todo_id) || null; } catch {} }
+        const drill = local || fromBee || {};
         const now = new Date();
         try {
           fs.mkdirSync(home, { recursive: true });
-          const done = loadDrillsDone(home);
-          done[String(c.todo_id)] = { ts: now.getTime(), score: c.score, heard: c.heard, bee_ok: bee.ok };
-          fs.writeFileSync(path.join(home, 'drills_done.json'), JSON.stringify(done, null, 1));
+          const doneMap = loadDrillsDone(home);
+          doneMap[String(c.todo_id)] = { ts: now.getTime(), score: c.score, heard: c.heard, bee_ok: done.ok };
+          fs.writeFileSync(path.join(home, 'drills_done.json'), JSON.stringify(doneMap, null, 1));
           const rec = { ts: now.getTime(), date: localDate(now), id: String(c.todo_id), target: str(drill.natural), heard: c.heard, score: c.score, words: c.words, source: 'watch' };
           fs.appendFileSync(path.join(home, 'pronunciation.jsonl'), JSON.stringify(rec) + '\n');
         } catch {}
-        return sendJson(res, 200, { ok: bee.ok, bee: bee.ok ? bee.result : { error: bee.error } });
+        let fact = null;
+        if (done.ok) {
+          try { fact = await recordWatchProgress(home, bee, { ...drill, todo_id: c.todo_id }, now); }
+          catch (err) { fact = { error: String(err.message || err) }; }
+        }
+        return sendJson(res, 200, { ok: done.ok, bee: done.ok ? done.result : { error: done.error }, fact });
       }
       if (p.startsWith('/api/')) return sendJson(res, 404, { error: 'not found' });
       if (p === '/lib/patterns.js') {
