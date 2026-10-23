@@ -1,0 +1,8 @@
+{"timestamp":1792700000000}
+{"type":"new-utterance","conversation_uuid":"5a1e0c2b-demo-4b6f-9e21-000000000001","utterance":{"id":910000001,"text":"오늘 회의 몇 시였지?","spoken_at":"2026-10-23T07:00:01.000Z"}}
+{"type":"new-utterance","conversation_uuid":"5a1e0c2b-demo-4b6f-9e21-000000000001","utterance":{"id":910000002,"text":"Yesterday I go to the client meeting and I didn't said anything about the deadline.","spoken_at":"2026-10-23T07:00:05.000Z"}}
+{"type":"new-utterance","conversation_uuid":"5a1e0c2b-demo-4b6f-9e21-000000000001","utterance":{"id":910000003,"text":"I am agree with your idea, it is very good point.","spoken_at":"2026-10-23T07:00:11.000Z"}}
+{"type":"new-utterance","conversation_uuid":"5a1e0c2b-demo-4b6f-9e21-000000000001","utterance":{"id":910000004,"text":"Can you explain me how this API work?","spoken_at":"2026-10-23T07:00:16.000Z"}}
+{"type":"new-utterance","conversation_uuid":"5a1e0c2b-demo-4b6f-9e21-000000000001","utterance":{"id":910000005,"text":"Thanks, that makes a lot of sense to me.","spoken_at":"2026-10-23T07:00:21.000Z"}}
+{"type":"new-utterance","conversation_uuid":"5a1e0c2b-demo-4b6f-9e21-000000000001","utterance":{"id":910000006,"text":"응 그럼 내일 다시 얘기하자.","spoken_at":"2026-10-23T07:00:25.000Z"}}
+{"type":"new-utterance-chunks","conversation_id":11000002,"chunks":[]}

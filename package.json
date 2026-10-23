@@ -1,0 +1,12 @@
+{
+  "name": "saybetter",
+  "version": "0.1.0",
+  "description": "An English speaking coach built on what you actually said, captured by Bee on your Apple Watch.",
+  "type": "module",
+  "license": "MIT",
+  "author": "Jinsu Park",
+  "bin": { "saybetter": "./bin/saybetter.js" },
+  "engines": { "node": ">=20" },
+  "scripts": { "test": "node --test", "start": "node bin/saybetter.js serve --open" },
+  "repository": { "type": "git", "url": "https://github.com/1jsjs/saybetter" }
+}

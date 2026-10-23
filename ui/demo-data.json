@@ -1,0 +1,224 @@
+{
+  "_note": "Sample data shown when the API has no items. days_ago / time are resolved relative to the viewer's today.",
+  "praise_ko": "오늘은 회의에서 영어로 끝까지 말한 문장이 많았어요. 질문할 때 'Could you…'로 시작한 건 아주 자연스러웠어요.",
+  "items": [
+    {
+      "utterance_id": "demo-01",
+      "days_ago": 0,
+      "time": "09:42",
+      "pattern": "past_tense_with_past_time",
+      "severity": "high",
+      "original": "Yesterday I go to the client meeting and we talk about the launch plan.",
+      "corrected": "Yesterday I went to the client meeting and we talked about the launch plan.",
+      "natural": "Yesterday I went to the client meeting and we talked about the launch plan.",
+      "explanation_ko": "'Yesterday'처럼 과거를 나타내는 말이 있으면 동사도 과거형(go → went, talk → talked)으로 바꿔요."
+    },
+    {
+      "utterance_id": "demo-02",
+      "days_ago": 0,
+      "time": "10:15",
+      "pattern": "be_verb_with_verb",
+      "severity": "high",
+      "original": "I am agree with your idea.",
+      "corrected": "I agree with your idea.",
+      "natural": "I agree with your idea.",
+      "explanation_ko": "agree는 그 자체로 동사라서 am을 붙이지 않아요. '동의해요'를 'be + 형용사'로 옮기지 마세요."
+    },
+    {
+      "utterance_id": "demo-13",
+      "days_ago": 0,
+      "time": "11:20",
+      "kind": "tutor",
+      "pattern": "korean_switch",
+      "severity": "medium",
+      "original": "We need to 일정을 좀 미루다 because of the release.",
+      "corrected": "We need to push back the schedule because of the release.",
+      "natural": "We need to push back the schedule because of the release.",
+      "explanation_ko": "'일정을 미루다'는 push back the schedule이라고 해요. postpone도 맞지만 회의에서는 push back이 더 자연스러워요."
+    },
+    {
+      "utterance_id": "demo-03",
+      "days_ago": 0,
+      "time": "13:28",
+      "pattern": "preposition",
+      "severity": "medium",
+      "original": "Can you explain me how this API work?",
+      "corrected": "Can you explain to me how this API works?",
+      "natural": "Can you explain to me how this API works?",
+      "explanation_ko": "explain은 사람 앞에 to가 필요해요(explain to me). 주어가 this API(3인칭 단수)라서 works예요."
+    },
+    {
+      "utterance_id": "demo-04",
+      "days_ago": 0,
+      "time": "16:05",
+      "pattern": "preposition",
+      "severity": "medium",
+      "original": "I will send you the document until Friday.",
+      "corrected": "I will send you the document by Friday.",
+      "natural": "I'll send you the document by Friday.",
+      "explanation_ko": "마감 시점은 by, 계속되는 기간의 끝은 until이에요. '금요일까지 보낼게요'는 by Friday."
+    },
+    {
+      "utterance_id": "demo-05",
+      "days_ago": 1,
+      "time": "11:10",
+      "pattern": "missing_article",
+      "severity": "medium",
+      "original": "We discussed about the budget in meeting.",
+      "corrected": "We discussed the budget in the meeting.",
+      "natural": "We discussed the budget in the meeting.",
+      "explanation_ko": "discuss는 바로 목적어를 받아서 about이 필요 없어요. 특정한 회의는 the meeting."
+    },
+    {
+      "utterance_id": "demo-06",
+      "days_ago": 1,
+      "time": "17:40",
+      "pattern": "past_tense_with_past_time",
+      "severity": "high",
+      "original": "Last week I finish the design review.",
+      "corrected": "Last week I finished the design review.",
+      "natural": "I finished the design review last week.",
+      "explanation_ko": "'Last week'가 있으니 finish → finished. 시간 표현은 문장 끝에 두면 더 자연스러워요."
+    },
+    {
+      "utterance_id": "demo-07",
+      "days_ago": 2,
+      "time": "10:02",
+      "pattern": "word_choice",
+      "severity": "medium",
+      "original": "I am very interesting in this project.",
+      "corrected": "I am very interested in this project.",
+      "natural": "I'm really interested in this project.",
+      "explanation_ko": "내가 흥미를 느끼면 interested, 대상이 흥미로우면 interesting이에요."
+    },
+    {
+      "utterance_id": "demo-08",
+      "days_ago": 2,
+      "time": "15:31",
+      "pattern": "third_person_s",
+      "severity": "low",
+      "original": "She have a good point.",
+      "corrected": "She has a good point.",
+      "natural": "She has a good point.",
+      "explanation_ko": "주어가 she(3인칭 단수)일 때 have는 has가 돼요."
+    },
+    {
+      "utterance_id": "demo-09",
+      "days_ago": 4,
+      "time": "09:20",
+      "pattern": "past_tense_with_past_time",
+      "severity": "high",
+      "original": "Two days ago we deploy new version.",
+      "corrected": "Two days ago we deployed a new version.",
+      "natural": "We deployed a new version two days ago.",
+      "explanation_ko": "'Two days ago'는 과거라서 deployed. 셀 수 있는 명사 version 앞에는 a가 필요해요."
+    },
+    {
+      "utterance_id": "demo-10",
+      "days_ago": 4,
+      "time": "14:47",
+      "pattern": "be_verb_with_verb",
+      "severity": "medium",
+      "original": "I am think we need more time.",
+      "corrected": "I think we need more time.",
+      "natural": "I think we need a bit more time.",
+      "explanation_ko": "think는 일반동사라서 am과 함께 쓰지 않아요. 진행형이라면 I'm thinking."
+    },
+    {
+      "utterance_id": "demo-11",
+      "days_ago": 5,
+      "time": "10:30",
+      "pattern": "missing_article",
+      "severity": "low",
+      "original": "Let's book meeting room for tomorrow.",
+      "corrected": "Let's book a meeting room for tomorrow.",
+      "natural": "Let's book a meeting room for tomorrow.",
+      "explanation_ko": "셀 수 있는 명사 하나를 처음 말할 때는 a를 붙여요(a meeting room)."
+    },
+    {
+      "utterance_id": "demo-12",
+      "days_ago": 5,
+      "time": "16:12",
+      "pattern": "countable_uncountable",
+      "severity": "low",
+      "original": "Please give me a feedback on the draft.",
+      "corrected": "Please give me feedback on the draft.",
+      "natural": "Could you give me some feedback on the draft?",
+      "explanation_ko": "feedback은 셀 수 없는 명사라서 a를 붙이지 않아요. 부탁할 땐 Could you…가 더 부드러워요."
+    }
+  ],
+  "drills": [
+    {
+      "todo_id": "demo-t1",
+      "time": "09:00",
+      "text": "Say it: Yesterday I went to the client meeting.",
+      "natural": "Yesterday I went to the client meeting and we talked about the launch plan."
+    },
+    {
+      "todo_id": "demo-t2",
+      "time": "13:00",
+      "text": "Say it: I agree with your idea.",
+      "natural": "I agree with your idea."
+    },
+    {
+      "todo_id": "demo-t3",
+      "time": "19:00",
+      "text": "Say it: Can you explain to me how this API works?",
+      "natural": "Can you explain to me how this API works?"
+    }
+  ],
+  "facts": [
+    {
+      "fact_id": "demo-f1",
+      "pattern": "past_tense_with_past_time",
+      "days_ago": 1,
+      "text": "Often keeps the present tense after past-time words like \"yesterday\" or \"last week\" — use the past form (went, finished)."
+    },
+    {
+      "fact_id": "demo-f2",
+      "pattern": "be_verb_with_verb",
+      "days_ago": 4,
+      "text": "Tends to put \"am\" before verbs (\"I am agree\", \"I am think\") — drop \"am\" with agree, think, and know."
+    }
+  ],
+  "practice": {
+    "today_ok": 0,
+    "today_total": 0,
+    "streak_days": 3
+  },
+  "takeaway_ko": "과거 이야기를 할 땐 동사부터 과거형으로. 'yesterday', 'last week'가 들리면 그게 신호예요.",
+  "takeaway_pattern": "past_tense_with_past_time",
+  "wins": [
+    {
+      "days_ago": 0,
+      "time": "15:10",
+      "pattern": "past_tense_with_past_time",
+      "text": "Yesterday we finished the demo and sent it to the client."
+    },
+    {
+      "days_ago": 2,
+      "time": "10:40",
+      "pattern": "be_verb_with_verb",
+      "text": "I agree — let's ship it on Monday."
+    },
+    {
+      "days_ago": 3,
+      "time": "14:05",
+      "pattern": "missing_article",
+      "text": "Can we book a room for the retro?"
+    }
+  ],
+  "review": {
+    "due": [
+      "demo-05",
+      "demo-07",
+      "demo-09"
+    ],
+    "counts": {
+      "box1": 6,
+      "box2": 4,
+      "box3": 2,
+      "box4": 1
+    }
+  }
+}
