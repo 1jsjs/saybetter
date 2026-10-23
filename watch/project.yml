@@ -1,0 +1,35 @@
+name: SayBetterDrill
+options:
+  bundleIdPrefix: build.jinsu.saybetter
+  deploymentTarget:
+    watchOS: "10.0"
+packages:
+  WhisperKit:
+    url: https://github.com/argmaxinc/WhisperKit
+    from: 1.1.1
+settings:
+  base:
+    DEVELOPMENT_TEAM: GBM4Q27QYW
+    CODE_SIGN_STYLE: Automatic
+    SWIFT_VERSION: "5.0"
+targets:
+  SayBetterDrill:
+    type: application
+    platform: watchOS
+    sources: [SayBetterDrill]
+    dependencies:
+      - package: WhisperKit
+        product: WhisperKit
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: build.jinsu.saybetter.drill
+        PRODUCT_NAME: SayBetter Drill
+        GENERATE_INFOPLIST_FILE: YES
+        INFOPLIST_FILE: SayBetterDrill/Info.plist
+        INFOPLIST_KEY_CFBundleDisplayName: SayBetter
+        INFOPLIST_KEY_WKApplication: YES
+        INFOPLIST_KEY_WKWatchOnly: YES
+        INFOPLIST_KEY_NSMicrophoneUsageDescription: SayBetter records you saying today's drill sentence to check your pronunciation.
+        CURRENT_PROJECT_VERSION: 1
+        MARKETING_VERSION: 0.1.0
+        TARGETED_DEVICE_FAMILY: 4

@@ -220,5 +220,133 @@
       "box3": 2,
       "box4": 1
     }
-  }
+  },
+  "pronunciation": [
+    {
+      "id": "demo-03",
+      "days_ago": 0,
+      "time": "13:40",
+      "target": "Can you explain to me how this API works?",
+      "heard": "Can you explain me how this API works?",
+      "score": 78,
+      "words": [
+        {
+          "word": "Can",
+          "status": "ok",
+          "heard": null,
+          "p": 0.96
+        },
+        {
+          "word": "you",
+          "status": "ok",
+          "heard": null,
+          "p": 0.98
+        },
+        {
+          "word": "explain",
+          "status": "ok",
+          "heard": null,
+          "p": 1
+        },
+        {
+          "word": "to",
+          "status": "missed",
+          "heard": null,
+          "p": 0
+        },
+        {
+          "word": "me",
+          "status": "weak",
+          "heard": null,
+          "p": 0.57
+        },
+        {
+          "word": "how",
+          "status": "ok",
+          "heard": null,
+          "p": 0.98
+        },
+        {
+          "word": "this",
+          "status": "ok",
+          "heard": null,
+          "p": 0.98
+        },
+        {
+          "word": "API",
+          "status": "ok",
+          "heard": null,
+          "p": 0.91
+        },
+        {
+          "word": "works?",
+          "status": "weak",
+          "heard": null,
+          "p": 0.6
+        }
+      ],
+      "extra": [],
+      "tips": [
+        {
+          "word": "to",
+          "tip_ko": "“to”가 잘 들리지 않았어요. 천천히 또박또박 한 번 더 말해 봐요."
+        },
+        {
+          "word": "me",
+          "tip_ko": "“me” 발음이 조금 불분명했어요. 천천히 또박또박 한 번 더 말해 봐요."
+        },
+        {
+          "word": "works?",
+          "tip_ko": "“works?” 발음이 조금 불분명했어요. r: 혀끝이 입천장에 닿지 않게 뒤로 말아요 (l과 구분)."
+        }
+      ]
+    },
+    {
+      "id": "demo-02",
+      "days_ago": 0,
+      "time": "10:30",
+      "target": "I agree with your idea.",
+      "heard": "I agree with your idea.",
+      "score": 88,
+      "words": [
+        {
+          "word": "I",
+          "status": "ok",
+          "heard": null,
+          "p": 0.95
+        },
+        {
+          "word": "agree",
+          "status": "weak",
+          "heard": null,
+          "p": 0.66
+        },
+        {
+          "word": "with",
+          "status": "ok",
+          "heard": null,
+          "p": 0.99
+        },
+        {
+          "word": "your",
+          "status": "ok",
+          "heard": null,
+          "p": 0.97
+        },
+        {
+          "word": "idea.",
+          "status": "ok",
+          "heard": null,
+          "p": 0.98
+        }
+      ],
+      "extra": [],
+      "tips": [
+        {
+          "word": "agree",
+          "tip_ko": "“agree” 발음이 조금 불분명했어요. r: 혀끝이 입천장에 닿지 않게 뒤로 말아요 (l과 구분)."
+        }
+      ]
+    }
+  ]
 }

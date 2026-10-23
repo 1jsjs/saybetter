@@ -6,6 +6,7 @@ import path from 'node:path';
 import {
   buildSummary, itemsForDate, loadHistory, localDate, practiceStats, appendPractice, startServer, loadPractice,
   leitnerState, reviewQueue, loadWins, aggregatePatterns, deriveTakeaway,
+  loadPronunciation, pronunciationStats,
 } from '../src/server.js';
 import { labelFor } from '../src/patterns.js';
 
@@ -235,6 +236,32 @@ test('tutor kind is preserved, default is fix', () => {
   assert.equal(t.kind, 'tutor');
   assert.equal(t.corrected, 'We need to push it back.');
   assert.equal(f.kind, 'fix');
+});
+
+test('pronunciation: today count/avg and most-missed sounds with latest tip', () => {
+  const rec = (ts, score, words, tips = [], date) => JSON.stringify({ ts, ...(date ? { date } : {}), target: 'x y', score, words, tips });
+  const home = tmpHome({ 'pronunciation.jsonl': [
+    rec(at(-1, 9), 50, [{ word: 'works?', status: 'missed', heard: 'walks' }, { word: 'to', status: 'weak' }], [{ word: 'works?', tip_ko: 'old tip' }]),
+    rec(at(0, 9), 80, [{ word: 'Works', status: 'weak' }, { word: 'me', status: 'ok' }], [{ word: 'Works', tip_ko: 'new tip' }]),
+    rec(at(0, 10), 70, [{ word: 'to', status: 'missed', heard: null }]),
+    'garbage',
+    JSON.stringify({ ts: at(0, 11), target: '', score: 10, words: [] }), // no target -> dropped
+  ].join('\n') });
+  const recs = loadPronunciation(home);
+  assert.equal(recs.length, 3);
+  const st = pronunciationStats(recs, TODAY);
+  assert.equal(st.total, 3);
+  assert.equal(st.today_count, 2);
+  assert.equal(st.today_avg, 75);
+  assert.deepEqual(st.sounds.map((x) => [x.word, x.times]), [['to', 2], ['works', 2]], 'ties broken by most recent');
+  const works = st.sounds.find((x) => x.word === 'works');
+  assert.equal(works.missed, 1);
+  assert.equal(works.weak, 1);
+  assert.equal(works.tip_ko, 'new tip');
+  assert.equal(works.heard_as, 'walks');
+  assert.equal(st.recent.length, 3);
+  const empty = buildSummary(tmpHome(), NOW).pronunciation;
+  assert.deepEqual([empty.total, empty.today_count, empty.today_avg, empty.sounds.length], [0, 0, null, 0]);
 });
 
 function addDaysStr(s, n) {

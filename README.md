@@ -1,6 +1,6 @@
 # SayBetter
 
-**An English speaking coach built from what you actually said today.**
+**An English speaking coach built from what you actually said today — grammar from real conversations, pronunciation from practice.**
 
 Language apps make you practise inside the app. But the mistakes that matter happen in real conversations — on calls,
 at work, with friends — and nobody is there to catch them. **SayBetter** uses [Bee](https://bee.computer) on an
@@ -16,6 +16,10 @@ mistakes to **Bee's memory**, and then notices when you **get them right in a re
 | ![Today: a notebook of your own sentences](docs/today.png) | ![Practice: try, hint, then check](docs/practice.png) |
 | **Patterns** | **Wrist drills** |
 | ![Patterns: slipped vs. got it right in real life](docs/patterns.png) | ![Tomorrow, on your wrist](docs/drills.png) |
+
+| Pronunciation check (my real attempt) | Watch drill app (watchOS simulator) |
+|---|---|
+| ![Pronunciation: amber = unclear, red = heard as another word](docs/pronunciation.png) | <img src="docs/watch-retry.png" width="180" alt="Watch drill retry"> <img src="docs/watch-pass.png" width="180" alt="Watch drill pass, done in Bee"> |
 
 | Drills in the Bee app (real) | What Bee remembers (real) |
 |---|---|
@@ -49,6 +53,28 @@ Every arrow that touches Bee is a real call at runtime: `bee stream`, `bee conve
 `bee todos create`, `bee facts create`, `bee facts update` — plus an **Agent Skill** (`skills/saybetter-coach`) that lets
 Claude Code / Codex quiz you using the Bee MCP server.
 
+## Pronunciation
+
+Bee keeps no raw audio, so pronunciation is checked where SayBetter *does* get audio: when you practise.
+In Practice you say the corrected sentence; the browser records it and `POST /api/pronounce` runs **whisper.cpp
+locally** with word-level probabilities, aligns the words with the sentence you meant (contractions expanded) and
+marks each word **ok**, **amber** (unclear) or **red** (heard as a different word), with Korean tips for the sounds
+Korean speakers find hard (th, r/l, v/b, f/p, final -s/-ed). Up to three tries — the Duolingo/Busuu principle
+("was it understood as intended?"), but on *your own* sentences. Results feed "Sounds to work on" in Patterns.
+
+Needs a whisper.cpp model, e.g. `ggml-large-v3-turbo-q5_0.bin` in `~/.cache/whisper-cpp/`
+(or `SAYBETTER_WHISPER_MODEL=/path/to/model.bin`) and `brew install whisper-cpp ffmpeg`.
+
+## Watch drill app (`watch/`)
+
+**SayBetter Drill** (SwiftUI, watchOS 10+) closes the loop on the wrist: it loads tomorrow's drills from Bee via
+`GET /api/drills`, you say the sentence into the watch, it transcribes **on the watch with WhisperKit**
+(`openai_whisper-tiny.en`) and aligns it with the target; on a pass it calls `POST /api/drills/complete`, which runs
+`bee todos complete <id>` — the drill is marked done **in Bee**. If on-device transcription is not possible it falls
+back to the Mac's whisper.cpp. Status: runs end to end in the watchOS simulator; signing for a physical Apple Watch SE 3
+succeeded, installation is pending (device tunnel). Build with `xcodegen` + Xcode; see `watch/README.md`.
+Run the server with `SAYBETTER_HOST=0.0.0.0 saybetter serve` so the watch can reach it on the LAN.
+
 ## What makes it different
 
 Speak, ELSA, Ringle, Loora and Duolingo all score practice **inside the app**. The few tools that look at real speech
@@ -70,7 +96,7 @@ Design choices backed by what learners and research say works:
 
 ```bash
 git clone https://github.com/1jsjs/saybetter && cd saybetter
-npm test                      # 28 tests, zero dependencies
+npm test                      # 35 tests, zero dependencies
 npm link                      # puts `saybetter` on your PATH
 
 # Bee CLI: enable Developer Mode in the Bee iOS app (Settings → tap Version 5×), then

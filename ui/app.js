@@ -58,6 +58,7 @@ const icon = {
   bell: '<svg aria-hidden="true" viewBox="0 0 24 24"><path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15z"/><path d="M10 20.5a2 2 0 0 0 4 0"/></svg>',
   check: '<svg aria-hidden="true" viewBox="0 0 24 24"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg>',
   bulb: '<svg aria-hidden="true" viewBox="0 0 24 24"><path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-3.5 10.9c.6.4 1 1.1 1 1.9V16h5v-.2c0-.8.4-1.5 1-1.9A6 6 0 0 0 12 3z"/></svg>',
+  stop: '<svg aria-hidden="true" viewBox="0 0 24 24"><rect x="7" y="7" width="10" height="10" rx="2"/></svg>',
   chev: '<svg class="pbar__chev" aria-hidden="true" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg>',
   flame: '<svg aria-hidden="true" viewBox="0 0 24 24"><path d="M12 21c-4 0-6.5-2.6-6.5-6 0-3.8 3.3-5.6 4-9.5 2.6 1.6 4 3.9 4 6 1-.6 1.7-1.6 2-2.8 1.8 1.7 3 3.9 3 6.3 0 3.4-2.5 6-6.5 6z"/></svg>',
 };
@@ -239,6 +240,7 @@ function buildDemoSummary(demo) {
     wins: wins.filter((w) => w.date === today),
     wins_total: wins.length, wins_week: wins.filter((w) => w.date >= weekStart).length,
     review: { due, due_total: due.length, counts: { box1: 0, box2: 0, box3: 0, box4: 0, ...(r.counts || {}) } },
+    pronunciation: aggregatePronClient((demo.pronunciation || []).map((r) => ({ ...at(r.days_ago, r.time), id: r.id || null, target: r.target, heard: r.heard || '', score: r.score, words: r.words || [], extra: r.extra || [], tips: r.tips || [] })), today),
     _all: items,
   };
 }
@@ -247,7 +249,7 @@ function emptySummary() {
   const today = localDate();
   const days = [];
   for (let i = 6; i >= 0; i--) days.push({ date: addDays(today, -i), count: 0 });
-  return { today: { date: today, items: [] }, latest_date: null, total_items: 0, days, patterns: [], drills: [], facts: [], praise_ko: '', takeaway: null, used_correctly: [], wins: [], wins_total: 0, wins_week: 0, review: { due: [], due_total: 0, counts: { box1: 0, box2: 0, box3: 0, box4: 0 } }, practice: { today_ok: 0, today_total: 0, streak_days: 0 } };
+  return { today: { date: today, items: [] }, latest_date: null, total_items: 0, days, patterns: [], drills: [], facts: [], praise_ko: '', takeaway: null, used_correctly: [], wins: [], wins_total: 0, wins_week: 0, review: { due: [], due_total: 0, counts: { box1: 0, box2: 0, box3: 0, box4: 0 } }, pronunciation: { total: 0, today_count: 0, today_avg: null, sounds: [], recent: [] }, practice: { today_ok: 0, today_total: 0, streak_days: 0 } };
 }
 
 async function load() {
@@ -393,6 +395,7 @@ function viewToday() {
       <span><b>${s.patterns.filter((x) => x.count).length}</b> ${s.patterns.length === 1 ? 'pattern' : 'patterns'} to watch — <a href="#patterns">see patterns</a></span>
       <span><b>${s.drills.length}</b> wrist ${s.drills.length === 1 ? 'drill' : 'drills'} for tomorrow — <a href="#drills">view</a></span>
       <span><b>${p.streak_days || 0}</b>-day practice streak</span>
+      ${s.pronunciation && s.pronunciation.today_count ? `<span><b>${s.pronunciation.today_count}</b> ${s.pronunciation.today_count === 1 ? 'sentence' : 'sentences'} checked aloud${s.pronunciation.today_avg != null ? ` · avg score <b>${s.pronunciation.today_avg}</b>` : ''}</span>` : ''}
     </div>` : '';
 
   const body = items.length
@@ -487,6 +490,11 @@ function viewPractice() {
   const it = pr.queue[pr.idx];
   const target = it.natural || it.corrected;
   const tutor = it.kind === 'tutor';
+  if (demoPronOn() && pr._demoPronFor !== pr.idx) {
+    pr._demoPronFor = pr.idx;
+    const r = demoPronFor(it);
+    if (r) { pr.solved = true; pr.pron = { status: 'result', attempts: 1, result: r, error: null, startedAt: 0 }; }
+  }
   const pct = Math.round((pr.idx / total) * 100);
   const revealed = pr.hint >= 2 || pr.solved;
   const reviewTag = it.review ? `<span class="tag-review">Review · from ${esc(it.date === addDays(localDate(), -1) ? 'yesterday' : fmtWeekday(it.date))}</span>` : '';
@@ -510,7 +518,7 @@ function viewPractice() {
       <p class="prompt-line">${revealed ? (tutor ? 'How to say it:' : 'The natural version:') : pr.hint === 1 ? 'Fill in the blanks — out loud:' : 'Now say it the natural way:'}</p>
       <p class="drill-target ${revealed || pr.hint === 1 ? '' : 'drill-target--hidden'}" lang="en" id="target">${targetHtml}</p>
 
-      ${pr.typing ? `<form class="type-form" data-form="type">
+      ${pr.solved ? '' : pr.typing ? `<form class="type-form" data-form="type">
           <label class="visually-hidden" for="typed">Type the natural sentence</label>
           <input id="typed" name="typed" autocomplete="off" autocapitalize="sentences" spellcheck="false" placeholder="Type the natural sentence…" ${pr.solved ? 'disabled' : ''}>
           <button class="btn btn--primary" type="submit" ${pr.solved ? 'disabled' : ''}>Check</button>
@@ -522,17 +530,18 @@ function viewPractice() {
         </div>`}
 
       <div id="result" class="result ${pr.last ? (pr.last.ok ? 'result--ok' : 'result--retry') : ''}" aria-live="polite" aria-atomic="true">${pr.last ? resultHtml(pr.last, it, target) : ''}</div>
+      ${revealed ? pronSection(it, target) : ''}
 
       <div class="practice-foot">
         <div style="display:flex;gap:8px;flex-wrap:wrap">
           ${!revealed && pr.hint < 1 ? `<button class="btn" type="button" data-action="hint">${icon.bulb}<span>Hint</span></button>` : ''}
           ${!revealed ? `<button class="btn ${pr.hint === 1 ? '' : 'btn--ghost'}" type="button" data-action="reveal">${icon.eye}<span>Reveal</span></button>` : ''}
-          ${synth && revealed ? `<button class="btn" type="button" data-action="listen" data-text="${esc(target)}">${icon.play}<span>Listen</span></button>` : ''}
-          ${SR ? `<button class="btn btn--ghost" type="button" data-action="toggle-typing">${pr.typing ? icon.mic + '<span>Speak instead</span>' : icon.keyboard + '<span>Type instead</span>'}</button>` : ''}
+          ${synth && revealed && !(pr.pron && pr.pron.status === 'result') ? `<button class="btn" type="button" data-action="listen" data-text="${esc(target)}">${icon.play}<span>Listen</span></button>` : ''}
+          ${SR && !pr.solved ? `<button class="btn btn--ghost" type="button" data-action="toggle-typing">${pr.typing ? icon.mic + '<span>Speak instead</span>' : icon.keyboard + '<span>Type instead</span>'}</button>` : ''}
         </div>
-        <button class="btn ${revealed ? 'btn--primary' : ''}" type="button" data-action="next">${pr.idx + 1 === total ? 'Finish' : 'Next'} ${icon.arrow}</button>
+        <button class="btn" type="button" data-action="next" ${pr.pron && pr.pron.status === 'result' ? 'hidden' : ''}>${pr.idx + 1 === total ? 'Finish' : 'Next'} ${icon.arrow}</button>
       </div>
-      <p class="hint-line" aria-hidden="true">Shortcuts: <span class="kbd">S</span> say · <span class="kbd">H</span> hint · <span class="kbd">R</span> reveal · <span class="kbd">N</span> next</p>
+      <p class="hint-line" aria-hidden="true">Shortcuts: <span class="kbd">S</span> say · <span class="kbd">H</span> hint · <span class="kbd">P</span> pronunciation · <span class="kbd">R</span> reveal · <span class="kbd">N</span> next</p>
     </article>
   </section>`;
 }
@@ -609,6 +618,220 @@ function listen() {
 }
 
 // ----- patterns -----
+// ---------------- pronunciation check ----------------
+const PRON_MAX_TRIES = 3;
+const PRON_MAX_MS = 10000;
+const canRecord = () => !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia && window.MediaRecorder);
+let pronRec = null; // { recorder, stream, chunks, timer, stopTimer }
+
+function pronState() {
+  const p = state.practice;
+  if (!p.pron) p.pron = { status: 'idle', attempts: 0, result: null, error: null, startedAt: 0 };
+  return p.pron;
+}
+
+function scoreBand(score) {
+  if (score >= 85) return { cls: 'good', label: 'Clear to a listener' };
+  if (score >= 60) return { cls: 'mid', label: 'Almost' };
+  return { cls: 'low', label: 'Try again' };
+}
+
+function scoreRing(score) {
+  const r = 26, c = 2 * Math.PI * r;
+  const band = scoreBand(score);
+  return `<div class="ring ring--${band.cls}" role="img" aria-label="Pronunciation score ${score} out of 100: ${band.label}">
+    <svg viewBox="0 0 64 64" aria-hidden="true"><circle class="ring__bg" cx="32" cy="32" r="${r}"/><circle class="ring__fg" cx="32" cy="32" r="${r}" stroke-dasharray="${((score / 100) * c).toFixed(1)} ${c.toFixed(1)}" transform="rotate(-90 32 32)"/></svg>
+    <span class="ring__n" aria-hidden="true">${score}</span>
+  </div>`;
+}
+
+function pronWordsHtml(res) {
+  return res.words.map((w) => {
+    if (w.status === 'missed') {
+      return `<span class="pw pw--missed">${esc(w.word)}<small class="pw__heard">${w.heard ? `heard as ‘${esc(w.heard)}’` : 'not heard'}</small></span>`;
+    }
+    if (w.status === 'weak') return `<span class="pw pw--weak">${esc(w.word)}<span class="visually-hidden"> (unclear)</span></span>`;
+    return `<span class="pw">${esc(w.word)}</span>`;
+  }).join(' ');
+}
+
+function pronSection(it, target) {
+  const pn = pronState();
+  const left = PRON_MAX_TRIES - pn.attempts;
+  let body = '';
+  if (pn.status === 'recording') {
+    body = `<div class="pron__row">
+        <button class="btn btn--rec btn--lg" type="button" data-action="pron-record" id="pron-record" aria-pressed="true">${icon.stop}<span>Stop</span></button>
+        <span class="rec-ind" aria-live="off"><span class="rec-dot" aria-hidden="true"></span>Recording <span id="pron-timer" class="rec-time">0:00</span> / 0:10</span>
+      </div>`;
+  } else if (pn.status === 'processing') {
+    body = `<div class="pron__row"><span class="processing" role="status"><span class="dots" aria-hidden="true"><i></i><i></i><i></i></span>Listening back…</span></div>`;
+  } else if (pn.status === 'result' && pn.result) {
+    const res = pn.result;
+    const band = scoreBand(res.score);
+    const tips = (res.tips || []).slice(0, 2);
+    body = `<div class="pron__result">
+        ${scoreRing(res.score)}
+        <div class="pron__verdict"><p class="pron__band pron__band--${band.cls}">${res.score} · ${band.label}</p>
+          <p class="pron__sub">${res.words.every((w) => w.status === 'ok') ? 'A listener would understand every word.' : 'Red words were heard as something else; amber ones were unclear.'}</p></div>
+      </div>
+      <p class="pron__words" lang="en">${pronWordsHtml(res)}</p>
+      ${res.extra && res.extra.length ? `<p class="pron__extra">Also heard: <span lang="en">${res.extra.map(esc).join(', ')}</span></p>` : ''}
+      ${tips.length ? `<ul class="pron__tips">${tips.map((t) => `<li class="ko" lang="ko">${esc(t.tip_ko)}</li>`).join('')}</ul>` : ''}
+      <div class="pron__actions">
+        <button class="btn btn--primary" type="button" data-action="pron-retry" id="pron-retry" ${left > 0 ? '' : 'disabled'}>${icon.mic}<span>${left > 0 ? `Try again <span class="muted-in">· ${pn.attempts} of ${PRON_MAX_TRIES}</span>` : `${PRON_MAX_TRIES} of ${PRON_MAX_TRIES} tries used`}</span></button>
+        ${synth ? `<button class="btn" type="button" data-action="pron-listen" data-text="${esc(target)}">${icon.play}<span>Listen</span></button>` : ''}
+        <button class="btn" type="button" data-action="next">Next ${icon.arrow}</button>
+      </div>`;
+  } else {
+    const err = pn.status === 'error' && pn.error ? `<p class="pron__error" role="alert">${esc(pn.error)}</p>` : '';
+    body = `${err}<div class="pron__row">
+        ${canRecord()
+          ? `<button class="btn btn--primary btn--lg" type="button" data-action="pron-record" id="pron-record" aria-pressed="false">${icon.mic}<span>${pn.attempts ? 'Record again' : 'Record'}</span></button>
+             <span class="muted" style="font-size:14px">Up to 10 seconds · press <span class="kbd">P</span></span>`
+          : '<p class="pron__error" role="alert">This browser can\'t record audio here. Open SayBetter in Chrome or Safari at http://localhost to check pronunciation.</p>'}
+      </div>`;
+  }
+  return `<section class="pron" id="pron" aria-labelledby="pron-title">
+    <div class="pron__head"><h2 class="pron__title" id="pron-title">Check pronunciation</h2>
+      <p class="pron__lede">Say the natural sentence once more. SayBetter checks whether a listener would hear each word as you meant it.</p></div>
+    <div id="pron-live" aria-live="polite" aria-atomic="true">${body}</div>
+  </section>`;
+}
+
+function pronMessage(err) {
+  if (!err) return 'Something went wrong — try again.';
+  if (err.name === 'NotAllowedError' || err.name === 'SecurityError') return 'Microphone access is blocked. Allow the microphone for this page in your browser settings, then try again.';
+  if (err.name === 'NotFoundError') return 'No microphone found. Connect one and try again.';
+  return err.message || String(err);
+}
+
+async function pronStart() {
+  const p = state.practice;
+  const pn = pronState();
+  if (pn.status === 'recording') return pronStop();
+  if (pn.status === 'processing' || pn.attempts >= PRON_MAX_TRIES) return;
+  if (!canRecord()) { pn.status = 'error'; pn.error = 'This browser can\'t record audio here.'; render(); return; }
+  try { synth && synth.cancel(); } catch { /* ignore */ }
+  let stream;
+  try { stream = await navigator.mediaDevices.getUserMedia({ audio: true }); }
+  catch (err) { pn.status = 'error'; pn.error = pronMessage(err); render(); return; }
+  const type = ['audio/webm;codecs=opus', 'audio/webm', 'audio/mp4'].find((t) => MediaRecorder.isTypeSupported?.(t));
+  let recorder;
+  try { recorder = new MediaRecorder(stream, type ? { mimeType: type } : undefined); }
+  catch (err) { stream.getTracks().forEach((t) => t.stop()); pn.status = 'error'; pn.error = pronMessage(err); render(); return; }
+  const chunks = [];
+  recorder.ondataavailable = (e) => { if (e.data && e.data.size) chunks.push(e.data); };
+  recorder.onstop = () => {
+    stream.getTracks().forEach((t) => t.stop());
+    clearInterval(pronRec?.timer); clearTimeout(pronRec?.stopTimer);
+    pronRec = null;
+    const blob = new Blob(chunks, { type: recorder.mimeType || type || 'audio/webm' });
+    pronSend(blob, p);
+  };
+  pronRec = { recorder, stream, chunks };
+  pn.status = 'recording'; pn.error = null; pn.startedAt = Date.now();
+  recorder.start();
+  render();
+  $('#pron-record')?.focus({ preventScroll: true });
+  pronRec.timer = setInterval(() => {
+    const s = Math.min(10, Math.floor((Date.now() - pn.startedAt) / 1000));
+    const el = $('#pron-timer'); if (el) el.textContent = `0:${pad(s)}`;
+  }, 250);
+  pronRec.stopTimer = setTimeout(pronStop, PRON_MAX_MS);
+}
+
+function pronStop() {
+  if (pronRec && pronRec.recorder.state !== 'inactive') {
+    const pn = pronState();
+    pn.status = 'processing';
+    render();
+    pronRec.recorder.stop();
+  }
+}
+
+function pronAbort() {
+  if (!pronRec) return;
+  const r = pronRec; pronRec = null;
+  clearInterval(r.timer); clearTimeout(r.stopTimer);
+  r.recorder.onstop = null;
+  try { if (r.recorder.state !== 'inactive') r.recorder.stop(); } catch { /* ignore */ }
+  r.stream.getTracks().forEach((t) => t.stop());
+}
+
+async function pronSend(blob, p) {
+  const pn = p.pron;
+  const it = p.queue[p.idx];
+  const target = it.natural || it.corrected;
+  if (blob.size < 800) { pn.status = 'error'; pn.error = "That recording was empty — hold the button a little longer and speak."; if (state.practice === p) render(); return; }
+  try {
+    const r = await fetch(`/api/pronounce?target=${encodeURIComponent(target)}&id=${encodeURIComponent(it.utterance_id || it.id)}`, {
+      method: 'POST', headers: { 'content-type': blob.type || 'application/octet-stream' }, body: blob,
+    });
+    const data = await r.json().catch(() => ({}));
+    if (r.status === 503) throw new Error('Pronunciation needs the local whisper model — see README.');
+    if (!r.ok) throw new Error(data.error ? `Couldn't check that recording: ${data.error}` : "Couldn't check that recording — try again.");
+    pn.attempts++;
+    pn.result = data;
+    pn.status = 'result';
+    const pr = state.summary.pronunciation;
+    if (pr && !state.demo) { pr.today_count = (pr.today_count || 0) + 1; }
+  } catch (err) {
+    pn.status = 'error';
+    pn.error = err.message && /fetch|network/i.test(err.message) ? 'SayBetter server is not reachable — is `saybetter serve` running?' : err.message;
+  }
+  if (state.practice === p && p.queue[p.idx] === it) {
+    render();
+    ($('#pron-retry:not([disabled])') || main.querySelector('#pron [data-action="next"]') || $('#pron-record'))?.focus({ preventScroll: true });
+  }
+}
+
+/** Dev/demo: `?demoPron=1` shows the latest saved result for the current card without a mic. */
+function demoPronFor(it) {
+  const recent = (state.summary.pronunciation && state.summary.pronunciation.recent) || [];
+  const target = it.natural || it.corrected;
+  const norm = (s) => normSentence(s).join(' ');
+  return [...recent].reverse().find((r) => r.id && (r.id === it.id || r.id === it.utterance_id))
+    || [...recent].reverse().find((r) => norm(r.target) === norm(target))
+    || recent[recent.length - 1] || null;
+}
+const demoPronOn = () => /[?&]demoPron=1/.test(location.hash) || /[?&]demoPron=1/.test(location.search);
+
+/** Client-side copy of the server aggregation, used for sample data only. */
+function aggregatePronClient(recs, today) {
+  const key = (w) => String(w).toLowerCase().replace(/[’]/g, "'").replace(/[^a-z0-9']/g, '');
+  const m = new Map();
+  for (const r of recs) for (const w of r.words) {
+    if (w.status === 'ok' || !key(w.word)) continue;
+    const s = m.get(key(w.word)) || { word: key(w.word), times: 0, weak: 0, missed: 0, tip_ko: '', heard_as: null };
+    s.times++; s[w.status]++;
+    const tip = (r.tips || []).find((t) => key(t.word) === key(w.word));
+    if (tip) s.tip_ko = tip.tip_ko;
+    if (w.heard) s.heard_as = w.heard;
+    m.set(s.word, s);
+  }
+  const todays = recs.filter((r) => r.date === today);
+  return {
+    total: recs.length, today_count: todays.length,
+    today_avg: todays.length ? Math.round(todays.reduce((a, r) => a + r.score, 0) / todays.length) : null,
+    sounds: [...m.values()].sort((a, b) => b.times - a.times || b.missed - a.missed).slice(0, 8),
+    recent: recs,
+  };
+}
+
+function soundsSection(s) {
+  const pr = s.pronunciation;
+  if (!pr || !pr.sounds || !pr.sounds.length) return '';
+  return `<div class="section">
+    <div class="section-head"><div><h2 class="section-title">Sounds to work on</h2><p class="section-sub">Words a listener didn't catch as you meant them, from ${plural(pr.total, 'pronunciation check')}</p></div></div>
+    <ul class="sounds">${pr.sounds.map((w) => `<li class="sound">
+      <p class="sound__word" lang="en">${esc(w.word)}${w.heard_as ? `<small>heard as ‘${esc(w.heard_as)}’</small>` : ''}</p>
+      <p class="sound__count"><b>${w.times}×</b>${w.missed ? ` <span class="sound__tag sound__tag--missed">${w.missed} missed</span>` : ''}${w.weak ? ` <span class="sound__tag sound__tag--weak">${w.weak} unclear</span>` : ''}</p>
+      ${w.tip_ko ? `<p class="sound__tip ko" lang="ko">${esc(w.tip_ko)}</p>` : ''}
+    </li>`).join('')}</ul>
+  </div>`;
+}
+
 function sparkBars(days) {
   const max = Math.max(1, ...days.map((d) => d.count));
   const today = localDate();
@@ -694,6 +917,7 @@ function viewPatterns() {
         <p class="legend" aria-hidden="true"><span class="legend__k"></span>Slipped <span class="legend__k legend__k--win"></span>Got it right in real life</p></div>
       <ul class="pbars">${rows}</ul>
     </div>
+    ${soundsSection(s)}
     <div class="section">
       <div class="section-head"><div><h2 class="section-title">What Bee remembers</h2><p class="section-sub">Recurring habits saved to your Bee memory</p></div></div>
       ${facts}
@@ -774,7 +998,7 @@ function viewDrills() {
 // ---------------- router ----------------
 const ROUTES = ['today', 'practice', 'patterns', 'drills'];
 function currentRoute() {
-  const h = decodeURIComponent(location.hash.replace(/^#\/?/, ''));
+  const h = decodeURIComponent(location.hash.replace(/^#\/?/, '').replace(/\?.*$/, ''));
   const [r, ...rest] = h.split('/');
   return { name: ROUTES.includes(r) ? r : 'today', param: rest.join('/') || null };
 }
@@ -834,6 +1058,9 @@ main.addEventListener('click', (e) => {
     case 'reveal': p.hint = 2; render(); break;
     case 'toggle-typing': p.typing = !p.typing; render(); if (p.typing) $('#typed')?.focus(); break;
     case 'next': nextCard(); break;
+    case 'pron-record': pronStart(); break;
+    case 'pron-retry': if (p.pron) { p.pron.status = 'idle'; } pronStart(); break;
+    case 'pron-listen': speak(btn.dataset.text); break;
     case 'restart': startPractice(null); render({ focus: true }); break;
     default: break;
   }
@@ -843,6 +1070,8 @@ function nextCard() {
   const p = state.practice;
   if (!p) return;
   if (recognizer) try { recognizer.abort(); } catch { /* ignore */ }
+  pronAbort();
+  p.pron = null;
   p.idx++; p.attempts = 0; p.hint = 0; p.solved = false; p.last = null; p.listening = false;
   render();
   const focusEl = main.querySelector('[data-action="say"]') || main.querySelector('#typed') || main.querySelector('[data-action="restart"]');
@@ -867,9 +1096,15 @@ document.addEventListener('keydown', (e) => {
   else if (k === 'h') { e.preventDefault(); state.practice.hint = Math.max(state.practice.hint, 1); render(); }
   else if (k === 'r') { e.preventDefault(); state.practice.hint = 2; render(); }
   else if (k === 'n' || k === 'arrowright') { e.preventDefault(); nextCard(); }
+  else if (k === 'p' && $('#pron')) {
+    e.preventDefault();
+    const pn = pronState();
+    if (pn.status === 'result') { if (pn.attempts < PRON_MAX_TRIES) { pn.status = 'idle'; pronStart(); } }
+    else pronStart();
+  }
 });
 
-window.addEventListener('hashchange', () => render({ focus: true }));
+window.addEventListener('hashchange', () => { pronAbort(); if (state.practice && state.practice.pron && state.practice.pron.status !== 'result') state.practice.pron = null; render({ focus: true }); });
 
 // ---------------- theme ----------------
 const mq = window.matchMedia('(prefers-color-scheme: dark)');

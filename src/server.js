@@ -8,7 +8,9 @@ import fs from 'node:fs';
 import path from 'node:path';
 import os from 'node:os';
 import { fileURLToPath } from 'node:url';
+import { spawn } from 'node:child_process';
 import { labelFor } from './patterns.js';
+import { assess } from './pronounce.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 export const UI_DIR = path.resolve(__dirname, '..', 'ui');
@@ -144,6 +146,61 @@ export function loadWins(home) {
 export function winsStats(wins, today) {
   const weekStart = addDays(today, -6);
   return { wins_total: wins.length, wins_week: wins.filter((w) => w.date >= weekStart && w.date <= today).length };
+}
+
+// ---------- pronunciation (read-only aggregation of pronunciation.jsonl) ----------
+const pronKey = (w) => String(w || '').toLowerCase().replace(/[’]/g, "'").replace(/[^a-z0-9']/g, '');
+
+export function loadPronunciation(home) {
+  return readJsonl(path.join(home, 'pronunciation.jsonl'))
+    .map((r) => {
+      const ts = Number.isFinite(Number(r.ts)) && r.ts != null && r.ts !== '' ? Number(r.ts) : null;
+      return {
+        ts,
+        date: isDate(r.date) ? r.date : ts != null ? localDate(new Date(ts)) : null,
+        id: r.id == null ? null : str(r.id),
+        target: str(r.target),
+        heard: str(r.heard),
+        score: Number.isFinite(Number(r.score)) ? Math.max(0, Math.min(100, Math.round(Number(r.score)))) : null,
+        words: asArray(r.words).map((w) => ({ word: str(w.word), status: ['ok', 'weak', 'missed'].includes(w.status) ? w.status : 'ok', heard: w.heard == null ? null : str(w.heard), p: Number(w.p) || 0 })).filter((w) => w.word),
+        extra: Array.isArray(r.extra) ? r.extra.map(str).filter(Boolean) : [],
+        tips: asArray(r.tips).map((t) => ({ word: str(t.word), tip_ko: str(t.tip_ko) })).filter((t) => t.tip_ko),
+      };
+    })
+    .filter((r) => r.date && r.target && r.score != null)
+    .sort((a, b) => (a.ts ?? 0) - (b.ts ?? 0));
+}
+
+export function pronunciationStats(recs, today, { soundsLimit = 8, recentLimit = 20 } = {}) {
+  const todays = recs.filter((r) => r.date === today);
+  const sounds = new Map();
+  for (const r of recs) {
+    for (const w of r.words) {
+      if (w.status === 'ok') continue;
+      const k = pronKey(w.word);
+      if (!k) continue;
+      const s = sounds.get(k) || { word: k, times: 0, weak: 0, missed: 0, tip_ko: '', heard_as: null, last_ts: 0 };
+      s.times++;
+      s[w.status]++;
+      const tip = r.tips.find((t) => pronKey(t.word) === k);
+      if ((r.ts ?? 0) >= s.last_ts) {
+        s.last_ts = r.ts ?? 0;
+        if (tip) s.tip_ko = tip.tip_ko;
+        if (w.heard) s.heard_as = w.heard;
+      } else if (!s.tip_ko && tip) s.tip_ko = tip.tip_ko;
+      sounds.set(k, s);
+    }
+  }
+  return {
+    total: recs.length,
+    today_count: todays.length,
+    today_avg: todays.length ? Math.round(todays.reduce((a, r) => a + r.score, 0) / todays.length) : null,
+    sounds: [...sounds.values()]
+      .sort((a, b) => b.times - a.times || b.missed - a.missed || b.last_ts - a.last_ts)
+      .slice(0, soundsLimit)
+      .map(({ last_ts, ...s }) => s),
+    recent: recs.slice(-recentLimit),
+  };
 }
 
 // ---------- today's one thing ----------
@@ -304,6 +361,7 @@ export function buildSummary(home, now = new Date()) {
     ...winsStats(wins, today),
     review: reviewQueue(history, practice, today),
     practice: practiceStats(practice, today),
+    pronunciation: pronunciationStats(loadPronunciation(home), today),
   };
 }
 
@@ -332,6 +390,67 @@ const MIME = {
   '.ico': 'image/x-icon',
   '.woff2': 'font/woff2',
 };
+
+
+// ---------- watch drills (SayBetter Drill watchOS app) ----------
+export function loadDrillsDone(home) {
+  const d = readJson(path.join(home, 'drills_done.json'), {});
+  return d && typeof d === 'object' && !Array.isArray(d) ? d : {};
+}
+
+// Drills for the watch: today's and tomorrow's alarms first (soonest first), then the rest (newest first).
+export function selectDrills(drills, done = {}, now = new Date()) {
+  const today = localDate(now);
+  const tomorrow = addDays(today, 1);
+  const items = asArray(drills)
+    .filter((d) => d && d.todo_id != null && str(d.natural))
+    .map((d) => {
+      const alarm = str(d.alarm_at) || null;
+      const day = alarm && !Number.isNaN(Date.parse(alarm)) ? localDate(new Date(alarm)) : null;
+      const rec = done[String(d.todo_id)];
+      return {
+        todo_id: d.todo_id,
+        natural: str(d.natural),
+        original: str(d.original),
+        pattern: str(d.pattern),
+        alarm_at: alarm,
+        done: !!rec,
+        score: rec ? rec.score ?? null : null,
+        _soon: day === today || day === tomorrow,
+      };
+    });
+  const soon = items.filter((i) => i._soon).sort((a, b) => str(a.alarm_at).localeCompare(str(b.alarm_at)));
+  const rest = items.filter((i) => !i._soon).sort((a, b) => str(b.alarm_at).localeCompare(str(a.alarm_at)));
+  return [...soon, ...rest].map(({ _soon, ...i }) => i);
+}
+
+export function parseDrillComplete(body) {
+  if (!body || typeof body !== 'object') return { error: 'invalid body' };
+  const id = body.todo_id;
+  if (!(typeof id === 'number' || (typeof id === 'string' && /^\d+$/.test(id)))) return { error: 'todo_id must be numeric' };
+  const score = Number(body.score);
+  const words = asArray(body.words).slice(0, 60).map((w) => ({ word: str(w.word), status: str(w.status), heard: w.heard == null ? null : str(w.heard) }));
+  return { todo_id: Number(id), score: Number.isFinite(score) ? Math.max(0, Math.min(100, Math.round(score))) : null, heard: str(body.heard), words };
+}
+
+function beeCompleteTodo(id, timeoutMs = 20000) {
+  return new Promise((resolve) => {
+    let out = '', err = '';
+    let child;
+    try { child = spawn('bee', ['todos', 'complete', String(id), '--json'], { stdio: ['ignore', 'pipe', 'pipe'] }); }
+    catch (e) { return resolve({ ok: false, error: String(e.message || e) }); }
+    const timer = setTimeout(() => { child.kill('SIGKILL'); resolve({ ok: false, error: 'bee timed out' }); }, timeoutMs);
+    child.stdout.on('data', (c) => { out += c; });
+    child.stderr.on('data', (c) => { err += c; });
+    child.on('error', (e) => { clearTimeout(timer); resolve({ ok: false, error: String(e.message || e) }); });
+    child.on('close', (code) => {
+      clearTimeout(timer);
+      let json = null;
+      try { json = JSON.parse(out); } catch {}
+      resolve(code === 0 ? { ok: true, result: json ?? out.trim() } : { ok: false, error: (err || out).trim() || `exit ${code}` });
+    });
+  });
+}
 
 function sendJson(res, status, data) {
   const body = JSON.stringify(data);
@@ -383,6 +502,47 @@ export function createHandler(home) {
         const rec = appendPractice(home, body);
         return sendJson(res, 200, { saved: rec, practice: practiceStats(loadPractice(home), localDate()) });
       }
+      if (p === '/api/pronounce' && req.method === 'POST') {
+        // Raw audio body (audio/webm, audio/mp4, audio/wav…); ?target=<sentence>&id=<item id>
+        const target = (url.searchParams.get('target') || '').trim();
+        if (!target) return sendJson(res, 400, { error: 'target is required' });
+        const chunks = [];
+        let size = 0;
+        for await (const c of req) { size += c.length; if (size > 15e6) return sendJson(res, 413, { error: 'audio too large' }); chunks.push(c); }
+        const tmp = path.join(os.tmpdir(), `sb-upload-${Date.now()}`);
+        fs.writeFileSync(tmp, Buffer.concat(chunks));
+        try {
+          const result = await assess(tmp, target);
+          const rec = { ts: Date.now(), date: localDate(), id: url.searchParams.get('id') || null, ...result };
+          try { fs.mkdirSync(home, { recursive: true }); fs.appendFileSync(path.join(home, 'pronunciation.jsonl'), JSON.stringify(rec) + '\n'); } catch {}
+          return sendJson(res, 200, rec);
+        } catch (err) {
+          return sendJson(res, err.code === 'NO_MODEL' ? 503 : 500, { error: String(err.message || err) });
+        } finally {
+          fs.rm(tmp, { force: true }, () => {});
+        }
+      }
+      if (p === '/api/drills' && req.method === 'GET') {
+        return sendJson(res, 200, { items: selectDrills(readJson(path.join(home, 'drills.json'), []), loadDrillsDone(home)) });
+      }
+      if (p === '/api/drills/complete' && req.method === 'POST') {
+        let body;
+        try { body = JSON.parse((await readBody(req)) || '{}'); } catch { return sendJson(res, 400, { error: 'invalid JSON' }); }
+        const c = parseDrillComplete(body);
+        if (c.error) return sendJson(res, 400, { error: c.error });
+        const bee = await beeCompleteTodo(c.todo_id);
+        const drill = asArray(readJson(path.join(home, 'drills.json'), [])).find((d) => d && Number(d.todo_id) === c.todo_id) || {};
+        const now = new Date();
+        try {
+          fs.mkdirSync(home, { recursive: true });
+          const done = loadDrillsDone(home);
+          done[String(c.todo_id)] = { ts: now.getTime(), score: c.score, heard: c.heard, bee_ok: bee.ok };
+          fs.writeFileSync(path.join(home, 'drills_done.json'), JSON.stringify(done, null, 1));
+          const rec = { ts: now.getTime(), date: localDate(now), id: String(c.todo_id), target: str(drill.natural), heard: c.heard, score: c.score, words: c.words, source: 'watch' };
+          fs.appendFileSync(path.join(home, 'pronunciation.jsonl'), JSON.stringify(rec) + '\n');
+        } catch {}
+        return sendJson(res, 200, { ok: bee.ok, bee: bee.ok ? bee.result : { error: bee.error } });
+      }
       if (p.startsWith('/api/')) return sendJson(res, 404, { error: 'not found' });
       if (p === '/lib/patterns.js') {
         // Share the label map with the browser (used for sample data).
@@ -401,7 +561,7 @@ export function createHandler(home) {
  * Start the SayBetter UI server.
  * @returns {Promise<{server: http.Server, url: string, port: number, home: string, close: () => Promise<void>}>}
  */
-export function startServer({ port = 4173, home = defaultHome(), host = '127.0.0.1' } = {}) {
+export function startServer({ port = 4173, home = defaultHome(), host = process.env.SAYBETTER_HOST || '127.0.0.1' } = {}) {
   const server = http.createServer(createHandler(home));
   return new Promise((resolve, reject) => {
     server.once('error', reject);

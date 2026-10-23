@@ -1,0 +1,354 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		1A84495C92632AA4EFB793FE /* WhisperKit in Frameworks */ = {isa = PBXBuildFile; productRef = 538817FCA8D798B720213297 /* WhisperKit */; };
+		4F524977768F1AE81F02D9AB /* Views.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4098C71D4EF61C0AB392AD2C /* Views.swift */; };
+		6EF1DF2CE53487A05AF4D04D /* Align.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9F70554DE70B3B27C2B133CF /* Align.swift */; };
+		83F3B5307AE1AF08548C7EEB /* API.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3359525807EBBC1025FB2E4 /* API.swift */; };
+		B8C2C3F3950D532B196D6AD5 /* Transcriber.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8730DD9ABD5C735B85F6142 /* Transcriber.swift */; };
+		C738353B43A7491BB6F3EDA2 /* Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = 99D971167D0685728D9A1B1F /* Models.swift */; };
+		DDB2EF2E8C8894706AEB7C6B /* Recorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7608A72B6C43C35C598F0896 /* Recorder.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		33768782454FF50D0515844C /* SayBetterDrill.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SayBetterDrill.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		4098C71D4EF61C0AB392AD2C /* Views.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views.swift; sourceTree = "<group>"; };
+		7608A72B6C43C35C598F0896 /* Recorder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Recorder.swift; sourceTree = "<group>"; };
+		99D971167D0685728D9A1B1F /* Models.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models.swift; sourceTree = "<group>"; };
+		9F70554DE70B3B27C2B133CF /* Align.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Align.swift; sourceTree = "<group>"; };
+		B8730DD9ABD5C735B85F6142 /* Transcriber.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Transcriber.swift; sourceTree = "<group>"; };
+		C3359525807EBBC1025FB2E4 /* API.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = API.swift; sourceTree = "<group>"; };
+		FA603851A6F18167C5616B44 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		85565CF4CDD6F48A4ED4B4E6 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				1A84495C92632AA4EFB793FE /* WhisperKit in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		49C1F3FE3D56F738019BB060 /* SayBetterDrill */ = {
+			isa = PBXGroup;
+			children = (
+				9F70554DE70B3B27C2B133CF /* Align.swift */,
+				C3359525807EBBC1025FB2E4 /* API.swift */,
+				FA603851A6F18167C5616B44 /* Info.plist */,
+				99D971167D0685728D9A1B1F /* Models.swift */,
+				7608A72B6C43C35C598F0896 /* Recorder.swift */,
+				B8730DD9ABD5C735B85F6142 /* Transcriber.swift */,
+				4098C71D4EF61C0AB392AD2C /* Views.swift */,
+			);
+			path = SayBetterDrill;
+			sourceTree = "<group>";
+		};
+		9B951FBD52C4E3559E3F42B7 = {
+			isa = PBXGroup;
+			children = (
+				49C1F3FE3D56F738019BB060 /* SayBetterDrill */,
+				AD0C72140A6BC1E7EF6FA99E /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		AD0C72140A6BC1E7EF6FA99E /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				33768782454FF50D0515844C /* SayBetterDrill.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		6B8119927F0842C578759779 /* SayBetterDrill */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 9A678DB760E3E649F7804E6F /* Build configuration list for PBXNativeTarget "SayBetterDrill" */;
+			buildPhases = (
+				07419FDAC5B08D584888D362 /* Sources */,
+				85565CF4CDD6F48A4ED4B4E6 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = SayBetterDrill;
+			packageProductDependencies = (
+				538817FCA8D798B720213297 /* WhisperKit */,
+			);
+			productName = SayBetterDrill;
+			productReference = 33768782454FF50D0515844C /* SayBetterDrill.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		0FBEC1E4C9880F16608AF06F /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1430;
+				TargetAttributes = {
+					6B8119927F0842C578759779 = {
+						DevelopmentTeam = GBM4Q27QYW;
+						ProvisioningStyle = Automatic;
+					};
+				};
+			};
+			buildConfigurationList = C464CDE2DDC9F50FE7763119 /* Build configuration list for PBXProject "SayBetterDrill" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = 9B951FBD52C4E3559E3F42B7;
+			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				E0D32EF9D9EFFED52199433E /* XCRemoteSwiftPackageReference "WhisperKit" */,
+			);
+			preferredProjectObjectVersion = 77;
+			productRefGroup = AD0C72140A6BC1E7EF6FA99E /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				6B8119927F0842C578759779 /* SayBetterDrill */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXSourcesBuildPhase section */
+		07419FDAC5B08D584888D362 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				83F3B5307AE1AF08548C7EEB /* API.swift in Sources */,
+				6EF1DF2CE53487A05AF4D04D /* Align.swift in Sources */,
+				C738353B43A7491BB6F3EDA2 /* Models.swift in Sources */,
+				DDB2EF2E8C8894706AEB7C6B /* Recorder.swift in Sources */,
+				B8C2C3F3950D532B196D6AD5 /* Transcriber.swift in Sources */,
+				4F524977768F1AE81F02D9AB /* Views.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		029B28D45164C4176F298194 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_STYLE = Automatic;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = GBM4Q27QYW;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+				WATCHOS_DEPLOYMENT_TARGET = 10.0;
+			};
+			name = Debug;
+		};
+		07B1C8AD6A8A6DF22A55C0EB /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = SayBetterDrill/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = SayBetter;
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "SayBetter records you saying today's drill sentence to check your pronunciation.";
+				INFOPLIST_KEY_WKApplication = YES;
+				INFOPLIST_KEY_WKWatchOnly = YES;
+				MARKETING_VERSION = 0.1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = build.jinsu.saybetter.drill;
+				PRODUCT_NAME = "SayBetter Drill";
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				TARGETED_DEVICE_FAMILY = 4;
+			};
+			name = Release;
+		};
+		12B34B1F5275CCB9BD80C095 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_STYLE = Automatic;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = GBM4Q27QYW;
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+				WATCHOS_DEPLOYMENT_TARGET = 10.0;
+			};
+			name = Release;
+		};
+		2FFDD104C6B48785BF36C9DC /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = SayBetterDrill/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = SayBetter;
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "SayBetter records you saying today's drill sentence to check your pronunciation.";
+				INFOPLIST_KEY_WKApplication = YES;
+				INFOPLIST_KEY_WKWatchOnly = YES;
+				MARKETING_VERSION = 0.1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = build.jinsu.saybetter.drill;
+				PRODUCT_NAME = "SayBetter Drill";
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				TARGETED_DEVICE_FAMILY = 4;
+			};
+			name = Debug;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		9A678DB760E3E649F7804E6F /* Build configuration list for PBXNativeTarget "SayBetterDrill" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				2FFDD104C6B48785BF36C9DC /* Debug */,
+				07B1C8AD6A8A6DF22A55C0EB /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		C464CDE2DDC9F50FE7763119 /* Build configuration list for PBXProject "SayBetterDrill" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				029B28D45164C4176F298194 /* Debug */,
+				12B34B1F5275CCB9BD80C095 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		E0D32EF9D9EFFED52199433E /* XCRemoteSwiftPackageReference "WhisperKit" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/argmaxinc/WhisperKit";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.1.1;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		538817FCA8D798B720213297 /* WhisperKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = E0D32EF9D9EFFED52199433E /* XCRemoteSwiftPackageReference "WhisperKit" */;
+			productName = WhisperKit;
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = 0FBEC1E4C9880F16608AF06F /* Project object */;
+}
