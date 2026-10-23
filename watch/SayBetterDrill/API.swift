@@ -13,8 +13,8 @@ enum API {
 
     static let session: URLSession = {
         let c = URLSessionConfiguration.default
-        c.timeoutIntervalForRequest = 30
-        c.timeoutIntervalForResource = 120
+        c.timeoutIntervalForRequest = 120
+        c.timeoutIntervalForResource = 180
         c.waitsForConnectivity = false
         return URLSession(configuration: c)
     }()
@@ -30,20 +30,23 @@ enum API {
         }
     }
 
-    static func drills() async throws -> [Drill] {
+    /// Drills plus where they came from: "bee" (live Bee todos) or "local" (offline copy).
+    static func drills() async throws -> (items: [Drill], source: String?) {
         let (data, resp) = try await session.data(from: base.appendingPathComponent("api/drills"))
         try check(data, resp)
-        return try JSONDecoder().decode(DrillsResponse.self, from: data).items
+        let items = try JSONDecoder().decode(DrillsResponse.self, from: data).items
+        return (items, try? JSONDecoder().decode(DrillsResponseSource.self, from: data).source)
     }
 
-    static func complete(todoId: Int, score: Int, heard: String, words: [WordResult]) async throws -> Bool {
+    static func complete(todoId: Int, score: Int, heard: String, words: [WordResult]) async throws -> CompleteResponse {
         var req = URLRequest(url: base.appendingPathComponent("api/drills/complete"))
         req.httpMethod = "POST"
+        req.timeoutInterval = 120 // the server completes the Bee todo and updates the Bee fact before answering
         req.setValue("application/json", forHTTPHeaderField: "content-type")
         req.httpBody = try JSONSerialization.data(withJSONObject: ["todo_id": todoId, "score": score, "heard": heard, "words": words.map { ["word": $0.word, "status": $0.status.rawValue, "heard": ($0.heard.map { $0 as Any }) ?? NSNull()] }])
         let (data, resp) = try await session.data(for: req)
         try check(data, resp)
-        return try JSONDecoder().decode(CompleteResponse.self, from: data).ok
+        return try JSONDecoder().decode(CompleteResponse.self, from: data)
     }
 
     /// Fallback path: upload the WAV, the Mac runs whisper.cpp and aligns.

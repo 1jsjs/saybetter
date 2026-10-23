@@ -33,6 +33,7 @@ struct DrillListView: View {
     @State private var error: String?
     @State private var loading = true
     @State private var path: [Drill] = []
+    @State private var source: String?
 
     var body: some View {
         NavigationStack(path: $path) {
@@ -60,6 +61,10 @@ struct DrillListView: View {
                         }.padding(.vertical, 2)
                     }
                 }
+                if !drills.isEmpty {
+                    Text(source == "bee" ? "From your Bee todos" : "Offline copy — Bee unreachable")
+                        .font(.caption2).foregroundStyle(.secondary).listRowBackground(Color.clear)
+                }
                 if !drills.isEmpty || error != nil {
                     NavigationLink { SettingsView() } label: {
                         Label("Settings", systemImage: "gearshape").font(.footnote)
@@ -82,7 +87,9 @@ struct DrillListView: View {
         loading = true
         defer { loading = false }
         do {
-            drills = try await API.drills()
+            let r = try await API.drills()
+            drills = r.items
+            source = r.source
             error = nil
             if Settings.openFirst, path.isEmpty, let first = drills.first(where: { $0.done != true }) ?? drills.first { path = [first] }
         } catch {
@@ -223,8 +230,13 @@ struct DrillView: View {
         if r.passed {
             beeState = "Marking done in Bee…"
             do {
-                let ok = try await API.complete(todoId: drill.todo_id, score: r.score, heard: r.heard, words: r.words)
-                beeState = ok ? "Done in Bee ✓" : "Saved, but Bee didn't confirm"
+                let res = try await API.complete(todoId: drill.todo_id, score: r.score, heard: r.heard, words: r.words)
+                if res.ok {
+                    beeState = "Done in Bee ✓"
+                    if let n = res.fact?.watch_passes { beeState! += "\nBee fact: practised \(n)× on watch" }
+                } else {
+                    beeState = "Saved, but Bee didn't confirm"
+                }
                 onDone(r.score)
             } catch {
                 beeState = "Couldn't reach Bee: \(error.localizedDescription)"

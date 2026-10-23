@@ -58,4 +58,10 @@ struct PronounceResponse: Codable {
     let tips: [Tip]?
 }
 
-struct CompleteResponse: Codable { let ok: Bool }
+struct CompleteResponse: Codable {
+    struct Fact: Codable { let watch_passes: Int? }
+    let ok: Bool
+    let fact: Fact?
+}
+
+struct DrillsResponseSource: Codable { let source: String? }
