@@ -72,7 +72,7 @@ practise and whether you did**:
 
 1. **What to practise comes from Bee.** `GET /api/drills` reads your Bee todos live (`bee todos list`) and keeps the
    "Say it: …" ones SayBetter scheduled. Delete or complete one in the Bee app and it disappears from the watch.
-2. When the Bee alarm buzzes, open the app and say the sentence. Scoring has three modes (Settings → Transcription):
+2. When the Bee reminder fires (it arrives as a Bee notification on the iPhone; Bee rewrites it, e.g. *"time to practice 'That's a good point' out loud"*), open the app on the watch and say the sentence. Scoring has three modes (Settings → Transcription):
    *Auto* scores **on the watch with WhisperKit** (`openai_whisper-tiny.en`) and falls back to the Mac, *On watch*
    uses only WhisperKit, *Mac server* sends the audio to the Mac's whisper.cpp. On-watch scoring was tested in the
    watchOS simulator; tiny.en scored 67% on a sentence the Mac scored 96%, so the real-watch demo uses *Mac server*.
