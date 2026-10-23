@@ -7,7 +7,7 @@ enum API {
         #if targetEnvironment(simulator)
         return URL(string: "http://localhost:4173")!
         #else
-        return URL(string: "http://192.168.123.105:4173")!
+        return URL(string: "http://192.168.123.106:4173")!
         #endif
     }
 

@@ -17,9 +17,9 @@ mistakes to **Bee's memory**, and then notices when you **get them right in a re
 | **Patterns** | **Wrist drills** |
 | ![Patterns: slipped vs. got it right in real life](docs/patterns.png) | ![Tomorrow, on your wrist](docs/drills.png) |
 
-| Pronunciation check (my real attempt) | Watch drill app (watchOS simulator) |
+| Pronunciation check (my real attempt) | Watch drill app on my Apple Watch SE 3 |
 |---|---|
-| ![Pronunciation: amber = unclear, red = heard as another word](docs/pronunciation.png) | <img src="docs/watch-bee-loop.png" width="420" alt="Watch drill app: drills from Bee todos, 96% pass, done in Bee and Bee fact updated"> |
+| ![Pronunciation: amber = unclear, red = heard as another word](docs/pronunciation.png) | <img src="docs/watch-real-loop.jpg" width="440" alt="SayBetter Drill on a real Apple Watch: drills from Bee todos, 93% pass, done in Bee and Bee fact updated"> |
 
 | Drills in the Bee app (real) | What Bee remembers (real) |
 |---|---|
@@ -80,8 +80,7 @@ practise and whether you did**:
    rewrites the fact.
 
 If Bee is unreachable the drill list falls back to the local copy; if on-device transcription is not possible it falls
-back to the Mac's whisper.cpp. Status: runs end to end in the watchOS simulator, and the Bee side (live todo list, todo completion, fact update) was checked against a real Bee account; signing for a physical Apple Watch SE 3
-succeeded, installation is pending (device tunnel). Build with `xcodegen` + Xcode; see `watch/README.md`.
+back to the Mac's whisper.cpp. Status: **runs on a real Apple Watch SE 3** (installed from Xcode; the Mac and the watch on the same 2.4 GHz Wi-Fi) and in the watchOS simulator; the Bee side (live todo list, todo completion, fact update) was checked against a real Bee account. On the watch, the tiny.en model is noticeably less accurate than the Mac's large-v3-turbo, so the demo uses the "Mac server" mode. Build with `xcodegen` + Xcode; see `watch/README.md`.
 Run the server with `SAYBETTER_HOST=0.0.0.0 saybetter serve` so the watch can reach it on the LAN.
 
 ## What makes it different

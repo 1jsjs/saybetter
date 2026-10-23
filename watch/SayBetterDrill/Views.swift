@@ -152,6 +152,11 @@ struct DrillView: View {
                         Text("You said: \(o)").font(.caption2).foregroundStyle(.secondary)
                             .fixedSize(horizontal: false, vertical: true)
                     }
+                    if drill.done == true {
+                        // already passed (and completed in Bee): say so instead of looking brand new
+                        Label(drill.score.map { "Done in Bee ✓ · \($0)%" } ?? "Done in Bee ✓", systemImage: "checkmark.circle.fill")
+                            .font(.footnote.weight(.semibold)).foregroundStyle(.bee)
+                    }
                 }
                 controls.frame(maxWidth: .infinity).padding(.top, 4)
             }
@@ -168,7 +173,7 @@ struct DrillView: View {
             if case .error(let e) = phase { Text(e).font(.caption2).foregroundStyle(.miss) }
             if result?.passed != true {
                 Button { Task { await run() } } label: {
-                    Label(result == nil ? "Say it" : "Try again", systemImage: "mic.fill").font(.headline)
+                    Label(result != nil ? "Try again" : (drill.done == true ? "Practise again" : "Say it"), systemImage: "mic.fill").font(.headline)
                 }
                 .buttonStyle(.borderedProminent).tint(.bee).foregroundStyle(.black)
             }
