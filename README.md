@@ -19,7 +19,7 @@ mistakes to **Bee's memory**, and then notices when you **get them right in a re
 
 | Pronunciation check (my real attempt) | Watch drill app (watchOS simulator) |
 |---|---|
-| ![Pronunciation: amber = unclear, red = heard as another word](docs/pronunciation.png) | <img src="docs/watch-retry.png" width="180" alt="Watch drill retry"> <img src="docs/watch-pass.png" width="180" alt="Watch drill pass, done in Bee"> |
+| ![Pronunciation: amber = unclear, red = heard as another word](docs/pronunciation.png) | <img src="docs/watch-bee-loop.png" width="420" alt="Watch drill app: drills from Bee todos, 96% pass, done in Bee and Bee fact updated"> |
 
 | Drills in the Bee app (real) | What Bee remembers (real) |
 |---|---|
