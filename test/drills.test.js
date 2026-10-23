@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { selectDrills, parseDrillComplete } from '../src/server.js';
+import { selectDrills, parseDrillComplete, collapseRepeats } from '../src/server.js';
 
 const NOW = new Date(2026, 9, 23, 18, 0, 0);
 const iso = (day, h) => new Date(2026, 9, day, h, 0, 0).toISOString();
@@ -27,4 +27,10 @@ test('parseDrillComplete validates id and clamps score', () => {
   assert.equal(parseDrillComplete({ todo_id: 'abc; rm -rf' }).error, 'todo_id must be numeric');
   assert.equal(parseDrillComplete(null).error, 'invalid body');
   assert.equal(parseDrillComplete({ todo_id: 7, score: 140 }).score, 100);
+});
+
+test('collapseRepeats drops stutters but keeps the mistakes', () => {
+  assert.equal(collapseRepeats('Can can you explain me how this API work?'), 'Can you explain me how this API work?');
+  assert.equal(collapseRepeats('I I I go to to the office'), 'I go to the office');
+  assert.equal(collapseRepeats('that that is fine, is it'), 'that is fine, is it');
 });

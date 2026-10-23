@@ -399,6 +399,12 @@ export function loadDrillsDone(home) {
   return d && typeof d === 'object' && !Array.isArray(d) ? d : {};
 }
 
+// ASR keeps stutters ("Can can you…"); on the small watch screen that reads like a bug, so the
+// "You said" line drops immediate word repeats while keeping the real mistakes.
+export function collapseRepeats(text) {
+  return text.replace(/\b([A-Za-z']+)(?:\s+\1\b)+/gi, '$1');
+}
+
 // Drills for the watch: today's and tomorrow's alarms first (soonest first), then the rest (newest first).
 export function selectDrills(drills, done = {}, now = new Date()) {
   const today = localDate(now);
@@ -412,7 +418,7 @@ export function selectDrills(drills, done = {}, now = new Date()) {
       return {
         todo_id: d.todo_id,
         natural: str(d.natural),
-        original: str(d.original),
+        original: collapseRepeats(str(d.original)),
         pattern: str(d.pattern),
         alarm_at: alarm,
         done: !!rec || !!d.completed,
