@@ -12,7 +12,10 @@ The learner is a native Korean speaker. Below are sentences they actually SAID t
 
 Rules:
 - Ignore spelling, capitalisation and punctuation: those are ASR artefacts.
-- If a sentence looks garbled by ASR (words that make no sense together, cut-off fragments), do not correct it.
+- If a sentence looks garbled by ASR (words that make no sense together), do not correct it.
+- ASR often splits ONE spoken sentence into consecutive lines (e.g. "Yesterday, I go to." + "To the client meeting, and …").
+  Read neighbouring lines together; correct the combined sentence once (use the first line's id) and never judge a
+  fragment without its neighbours.
 - Coach only what matters when speaking: grammar, word choice, prepositions, articles, collocations, and phrasing
   a native speaker would not use. Skip sentences that are already natural. Proper nouns and jargon are not errors.
 - At most ${maxItems} items, most important first. Prefer one clear fix over many small ones.
@@ -20,7 +23,9 @@ Rules:
 - If the learner switched to Korean in the middle of an English sentence (they did not know how to say it),
   return kind "tutor": "natural" is how to say the whole thing in English, "explanation_ko" teaches the missing expression.
 - The learner's known weak patterns: ${known}. Reuse those pattern names when they apply. If the learner said a
-  sentence that uses one of those patterns CORRECTLY, list it in "used_correctly" (this is real-life progress).
+  complete sentence that uses one of those patterns CORRECTLY, list it in "used_correctly" (real-life progress).
+  Be strict: the sentence itself must contain the pattern's trigger and the correct form (for past_tense_with_past_time:
+  a past-time expression like yesterday / last week / ago AND correct past-tense verbs). Fragments never count.
 - "takeaway_ko": the ONE thing to focus on tomorrow, in Korean, one sentence; "takeaway_pattern": its pattern name.
 
 Sentences:

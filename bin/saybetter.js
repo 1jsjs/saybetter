@@ -19,7 +19,7 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const HELP = `saybetter — an English speaking coach built on what you actually said (via Bee)
 
 Usage:
-  saybetter review   [--today | --minutes N | --conversation <id>] [--drills 3] [--all] [--dry-run] [--json]
+  saybetter review   [--today | --since HH:MM | --minutes N | --conversation <id>] [--drills 3] [--all] [--dry-run] [--json]
   saybetter watch    [--window 8] [--dry-run] [--input events.jsonl]
   saybetter check    "<an English sentence>" [--json]
   saybetter patterns
@@ -59,6 +59,7 @@ async function createDrills(items, n, state) {
   const seen = new Set(state.drilled);
   const fresh = [...items].sort(bySeverity).filter((it) => {
     const k = it.natural.toLowerCase();
+    if (/\.\.\.|…/.test(it.natural) || it.natural.split(/\s+/).length < 4) return false; // skip fragments
     if (seen.has(k)) return false;
     seen.add(k);
     return true;
@@ -120,8 +121,17 @@ async function rememberPatterns(state) {
       continue;
     }
     try {
+      let updated = false;
       if (existing) {
-        await bee.factsUpdate(existing.fact_id, text);
+        try {
+          await bee.factsUpdate(existing.fact_id, text);
+          updated = true;
+        } catch (err) {
+          if (!/not found/i.test(err.message)) throw err;
+          facts.splice(facts.indexOf(existing), 1); // deleted in the Bee app: recreate it below
+        }
+      }
+      if (updated) {
         Object.assign(existing, { text, count, updated_at: new Date().toISOString() });
         say(`  Bee fact ${existing.fact_id} updated · ${text}`);
         saved.push(existing);
@@ -148,6 +158,12 @@ async function review() {
   if (flags.conversation) {
     scope = `conversation ${flags.conversation}`;
     utterances = await bee.recentUtterances({ conversationId: flags.conversation });
+  } else if (flags.since) {
+    const [h, m] = String(flags.since).split(':').map(Number);
+    const d = new Date();
+    d.setHours(h, m || 0, 0, 0);
+    scope = `since ${flags.since}`;
+    utterances = await bee.utterancesSince(d.getTime());
   } else if (flags.minutes) {
     const minutes = numberFlag(flags, 'minutes', 120);
     scope = `the last ${minutes} min`;
